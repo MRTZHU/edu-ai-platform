@@ -41,8 +41,8 @@ async function onSubmit() {
     </form>
 
     <span class="text-sm">
-      <router-link to="/signup" class="font-bold">Sign up</router-link><br />
-      <router-link to="/signin" class="font-bold">Sign in</router-link>
+      <router-link to="/auth/signup" class="font-bold">Sign up</router-link><br />
+      <router-link to="/auth/signin" class="font-bold">Sign in</router-link>
     </span>
   </div>
 </template>

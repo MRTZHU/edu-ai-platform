@@ -10,7 +10,7 @@
     <template v-slot:actions>
       <span class="text-sm">
         Already registered?
-        <router-link to="/signin" class="font-bold"
+        <router-link to="/auth/signin" class="font-bold"
           >Sign in here!</router-link
         ></span
       ></template

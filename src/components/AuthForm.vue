@@ -3,103 +3,127 @@ import { useAuthStore } from "@/stores/auth";
 import { Ref } from "vue";
 import { UserCredentials } from "@supabase/supabase-js";
 
+// 定义组件接收的 props（从父组件传入的配置）
 const props = defineProps<{
-  signUp: boolean;
-  title: string;
-  subtitle: string;
-  emailPlaceholder: string;
-  passwordPlaceholder: string;
+  signUp: boolean; // 是否是注册模式（true=注册，false=登录）
+  title: string; // 页面标题
+  subtitle: string; // 页面副标题
+  emailPlaceholder: string; // 邮箱输入框的 placeholder 文字
+  passwordPlaceholder: string; // 密码输入框的 placeholder 文字
 }>();
 
+// 定义响应式变量存储用户输入的凭据（email 和 password）
 const credentials: Ref<UserCredentials> = ref({
   email: "",
   password: "",
 });
 
+// 获取 Vue Router 实例，用于页面跳转
 const router = useRouter();
 
+// Email 登录/注册的加载状态
 const emailLoading = ref(false);
+
+// Email 登录/注册函数
 async function emailAuth() {
-  emailLoading.value = true;
-  const { supabase } = useAuthStore();
+  emailLoading.value = true; // 开始加载
+  const { supabase } = useAuthStore(); // 从 Pinia store 获取 Supabase 客户端
+  // 根据 signUp 的值决定是调用 signUp 还是 signIn
   const { user, error } = props.signUp
-    ? await supabase.auth.signUp(credentials.value)
-    : await supabase.auth.signIn(credentials.value);
-  if (user) router.push("/");
+    ? await supabase.auth.signUp(credentials.value) // 注册
+    : await supabase.auth.signIn(credentials.value); // 登录
+  if (user) router.push("/dashboard"); // 登录/注册成功，跳转到dashboard
   else if (error) {
-    alert(error.message);
-    emailLoading.value = false;
+    alert(error.message); // 显示错误信息
+    emailLoading.value = false; // 结束加载
   }
 }
 
+// GitHub 登录的加载状态
 const gitHubLoading = ref(false);
+
+// GitHub 登录函数
 async function gitHubAuth() {
-  gitHubLoading.value = true;
-  const { supabase } = useAuthStore();
+  gitHubLoading.value = true; // 开始加载
+  const { supabase } = useAuthStore(); // 从 Pinia store 获取 Supabase 客户端
+  // 调用 Supabase 的 signIn 方法，使用 GitHub 作为登录提供商
   const { user, error } = await supabase.auth.signIn(
     { provider: "github" },
     {
-      redirectTo: `${window.location.origin}/callback`,
+      redirectTo: `${window.location.origin}/auth/callback`, // 登录后跳转到回调页面
     }
   );
-  if (user) router.push("/");
+  if (user) router.push("/dashboard"); // 登录成功，跳转到dashboard
   else if (error) {
-    alert(error.message);
-    gitHubLoading.value = false;
+    alert(error.message); // 显示错误信息
+    gitHubLoading.value = false; // 结束加载
   }
 }
 
+// Google 登录的加载状态
 const googleLoading = ref(false);
+
+// Google 登录函数
 async function googleAuth() {
-  googleLoading.value = true;
-  const { supabase } = useAuthStore();
+  googleLoading.value = true; // 开始加载
+  const { supabase } = useAuthStore(); // 从 Pinia store 获取 Supabase 客户端
+  // 调用 Supabase 的 signIn 方法，使用 Google 作为登录提供商
   const { user, error } = await supabase.auth.signIn(
     { provider: "google" },
     {
-      redirectTo: `${window.location.origin}/callback`,
+      redirectTo: `${window.location.origin}/auth/callback`, // 登录后跳转到回调页面
     }
   );
-  if (user) router.push("/");
+  if (user) router.push("/dashboard"); // 登录成功，跳转到dashboard
   else if (error) {
-    alert(error.message);
-    googleLoading.value = false;
+    alert(error.message); // 显示错误信息
+    googleLoading.value = false; // 结束加载
   }
 }
 
+// Twitter 登录的加载状态
 const twitterLoading = ref(false);
+
+// Twitter 登录函数
 async function twitterAuth() {
-  twitterLoading.value = true;
-  const { supabase } = useAuthStore();
+  twitterLoading.value = true; // 开始加载
+  const { supabase } = useAuthStore(); // 从 Pinia store 获取 Supabase 客户端
+  // 调用 Supabase 的 signIn 方法，使用 Twitter 作为登录提供商
   const { user, error } = await supabase.auth.signIn(
     { provider: "twitter" },
     {
-      redirectTo: `${window.location.origin}/callback`,
+      redirectTo: `${window.location.origin}/auth/callback`, // 登录后跳转到回调页面
     }
   );
-  if (user) router.push("/");
+  if (user) router.push("/dashboard"); // 登录成功，跳转到dashboard
   else if (error) {
-    alert(error.message);
-    twitterLoading.value = false;
+    alert(error.message); // 显示错误信息
+    twitterLoading.value = false; // 结束加载
   }
 }
 
+// Facebook 登录的加载状态
 const facebookLoading = ref(false);
+
+// Facebook 登录函数
 async function facebookAuth() {
-  facebookLoading.value = true;
-  const { supabase } = useAuthStore();
+  facebookLoading.value = true; // 开始加载
+  const { supabase } = useAuthStore(); // 从 Pinia store 获取 Supabase 客户端
+  // 调用 Supabase 的 signIn 方法，使用 Facebook 作为登录提供商
   const { user, error } = await supabase.auth.signIn(
     { provider: "facebook" },
     {
-      redirectTo: `${window.location.origin}/callback`,
+      redirectTo: `${window.location.origin}/auth/callback`, // 登录后跳转到回调页面
     }
   );
-  if (user) router.push("/");
+  if (user) router.push("/dashboard"); // 登录成功，跳转到dashboard
   else if (error) {
-    alert(error.message);
-    facebookLoading.value = false;
+    alert(error.message); // 显示错误信息
+    facebookLoading.value = false; // 结束加载
   }
 }
 
+// 统一计算所有登录方式的加载状态
 const loading = computed(
   () =>
     gitHubLoading.value ||
@@ -109,16 +133,23 @@ const loading = computed(
     facebookLoading.value
 );
 </script>
+
 <template>
   <div>
+    <!-- 页面标题 -->
     <h2 class="mb- text-2xl font-bold">
       {{ title }}
     </h2>
+    <!-- 页面副标题 -->
     <p class="mb-4 text-sm text-slate-500">
       {{ subtitle }}
     </p>
+
+    <!-- Email 登录/注册表单 -->
     <form class="flex w-full flex-col items-start" @submit.prevent="emailAuth">
+      <!-- 邮箱标签 -->
       <VLabel for="email">Email</VLabel>
+      <!-- 邮箱输入框 -->
       <VInput
         required
         :disabled="loading"
@@ -129,7 +160,9 @@ const loading = computed(
         :placeholder="emailPlaceholder"
         v-model="(credentials.email as string)"
       />
+      <!-- 密码标签 -->
       <VLabel for="password">Password</VLabel>
+      <!-- 密码输入框 -->
       <VPasswordInput
         :disabled="loading"
         class="mb-4 w-full"
@@ -139,13 +172,15 @@ const loading = computed(
         v-model="(credentials.password as string)"
       />
 
+      <!-- 忘记密码链接（仅在登录模式显示） -->
       <router-link
         v-if="!signUp"
-        to="/forgotpassword"
+        to="/auth/forgotpassword"
         class="mb-4 text-sm font-bold"
         >Forgot your password?</router-link
       >
 
+      <!-- 提交按钮 -->
       <VButton
         :loading="emailLoading"
         :disabled="loading"
@@ -154,7 +189,10 @@ const loading = computed(
         >{{ signUp ? "Sign Up" : "Sign In" }}</VButton
       >
     </form>
+
+    <!-- 第三方登录按钮 -->
     <div class="flex space-x-2">
+      <!-- GitHub 登录按钮 -->
       <VButton
         :loading="gitHubLoading"
         :disabled="loading"
@@ -164,6 +202,7 @@ const loading = computed(
       >
         <i-mdi-github class="h-5 w-5" />
       </VButton>
+      <!-- Google 登录按钮 -->
       <VButton
         :loading="googleLoading"
         :disabled="loading"
@@ -173,6 +212,7 @@ const loading = computed(
       >
         <i-mdi-google class="h-5 w-5" />
       </VButton>
+      <!-- Twitter 登录按钮 -->
       <VButton
         :loading="twitterLoading"
         :disabled="loading"
@@ -182,6 +222,7 @@ const loading = computed(
       >
         <i-mdi-twitter class="h-5 w-5" />
       </VButton>
+      <!-- Facebook 登录按钮 -->
       <VButton
         :loading="facebookLoading"
         :disabled="loading"
@@ -193,6 +234,7 @@ const loading = computed(
       </VButton>
     </div>
 
+    <!-- 预留插槽，允许父组件插入额外内容 -->
     <slot name="actions" />
   </div>
 </template>

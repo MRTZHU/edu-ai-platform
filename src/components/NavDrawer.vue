@@ -76,6 +76,36 @@ const navLinks = [
     icon: "heroicons-outline:home",
   },
   {
+    text: "AI魔法工具箱",
+    to: "/ai-magic-toolbox",
+    icon: "heroicons-outline:inbox-stack",
+  },
+  {
+    text: "AI机器人",
+    to: "/ai-robot",
+    icon: "heroicons-outline:chat-bubble-bottom-center-text",
+  },
+  {
+    text: "AI美育",
+    to: "/ai-painting",
+    icon: "heroicons-outline:photo",
+  },
+  {
+    text: "AI知识库",
+    to: "/ai-knowledge-base",
+    icon: "heroicons-outline:server-stack",
+  },
+  {
+    text: "生成历史",
+    to: "/generate-history",
+    icon: "heroicons-outline:queue-list",
+  },
+  {
+    text: "魔法实验室",
+    to: "/magic-lab",
+    icon: "heroicons-outline:beaker",
+  },
+  {
     text: "Profile",
     to: "/profile",
     icon: "heroicons-outline:user",

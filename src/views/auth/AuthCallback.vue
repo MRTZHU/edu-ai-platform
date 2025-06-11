@@ -10,7 +10,7 @@ onMounted(() => {
       "arrived on callback page with an existing user, so going home"
     );
     setTimeout(() => {
-      router.push("/");
+      router.push("/dashboard");
     }, 0);
   }
 });
