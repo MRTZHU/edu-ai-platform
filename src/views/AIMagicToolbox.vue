@@ -197,14 +197,14 @@
 import { ref, computed, onMounted } from 'vue'
 import ToolCard from '@/components/ToolCard.vue'
 import CategoryFilter from '@/components/CategoryFilter.vue'
-import aiConfig, { type DifyappConfig } from '../../.cursor/fanben'
+import aiConfig, { type DifyAppConfig } from '../config/ai'
 import { difyApiService, type DifyApiResponse } from '@/services/difyApi'
 
 // 响应式数据
 const selectedCategory = ref('全部')
 const favoriteToolIds = ref<string[]>([]) // 收藏的工具ID列表
 const showToolDialog = ref(false)
-const selectedTool = ref<DifyappConfig | null>(null)
+const selectedTool = ref<DifyAppConfig | null>(null)
 const selectedToolKey = ref('') // 当前选中工具的API Key标识
 const isTestingApi = ref(false)
 const apiTestResult = ref<DifyApiResponse | null>(null)
@@ -219,18 +219,18 @@ const apiConfigInfo = ref<{
 })
 
 // 所有可用工具
-const allTools = computed((): DifyappConfig[] => {
+const allTools = computed((): DifyAppConfig[] => {
   if (!aiConfig.enable) return []
   return Object.values(aiConfig.apps)
 })
 
 // 收藏的工具
-const favoriteTools = computed((): DifyappConfig[] => {
+const favoriteTools = computed((): DifyAppConfig[] => {
   return allTools.value.filter(tool => favoriteToolIds.value.includes(tool.id))
 })
 
 // 根据分类筛选的工具
-const filteredTools = computed((): DifyappConfig[] => {
+const filteredTools = computed((): DifyAppConfig[] => {
   if (selectedCategory.value === '全部') {
     return allTools.value
   }
@@ -238,7 +238,7 @@ const filteredTools = computed((): DifyappConfig[] => {
 })
 
 // 处理工具使用
-const handleUseTool = (tool: DifyappConfig) => {
+const handleUseTool = (tool: DifyAppConfig) => {
   selectedTool.value = tool
   selectedToolKey.value = tool.apikey.replace('VITE_DIFY_API_KEY_', '')
   showToolDialog.value = true

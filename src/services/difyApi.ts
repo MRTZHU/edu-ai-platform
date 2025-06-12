@@ -3,6 +3,8 @@
  * 用于调用 Dify 应用 API
  */
 
+import { apiConfig, endpoints } from '@/config/api';
+
 export interface DifyApiResponse {
   success: boolean;
   data?: any;
@@ -40,9 +42,8 @@ export class DifyApiService {
   private baseUrl: string;
   
   constructor() {
-    // 修复环境变量类型问题
-    const envBaseUrl = (import.meta.env as any).VITE_DIFY_API_BASE_URL;
-    this.baseUrl = (typeof envBaseUrl === 'string' ? envBaseUrl : 'https://api.dify.ai/v1').replace(/\/$/, '');
+    // 使用配置文件中的baseUrl
+    this.baseUrl = apiConfig.dify.baseUrl.replace(/\/$/, '');
   }
 
   /**
@@ -59,7 +60,7 @@ export class DifyApiService {
     }
     
     // 如果没有专用Key，使用默认Key
-    const defaultKey = (import.meta.env as any).VITE_DIFY_API_KEY;
+    const defaultKey = apiConfig.dify.defaultApiKey;
     if (!defaultKey || typeof defaultKey !== 'string' || !defaultKey.trim()) {
       throw new Error('未配置Dify API Key，请检查环境变量配置');
     }
@@ -85,6 +86,7 @@ export class DifyApiService {
     
     try {
       const apiKey = this.getApiKey(toolId);
+      const endpoint = `${this.baseUrl}${endpoints.dify.chatMessages}`;
       
       const requestBody: DifyChatRequest = {
         inputs,
@@ -96,7 +98,7 @@ export class DifyApiService {
 
       // 记录请求详情用于调试
       requestDetails = {
-        url: `${this.baseUrl}/chat-messages`,
+        url: endpoint,
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiKey.substring(0, 10)}...`, // 只显示前10位用于调试
@@ -117,7 +119,7 @@ export class DifyApiService {
         query
       });
 
-      const response = await fetch(`${this.baseUrl}/chat-messages`, {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
@@ -197,6 +199,7 @@ export class DifyApiService {
     
     try {
       const apiKey = this.getApiKey(toolId);
+      const endpoint = `${this.baseUrl}${endpoints.dify.workflows}`;
       
       const requestBody: DifyWorkflowRequest = {
         inputs,
@@ -207,7 +210,7 @@ export class DifyApiService {
 
       // 记录请求详情用于调试
       requestDetails = {
-        url: `${this.baseUrl}/workflows/run`,
+        url: endpoint,
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiKey.substring(0, 10)}...`, // 只显示前10位用于调试
@@ -227,7 +230,7 @@ export class DifyApiService {
         inputsKeys: Object.keys(inputs)
       });
 
-      const response = await fetch(`${this.baseUrl}/workflows/run`, {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
@@ -292,11 +295,11 @@ export class DifyApiService {
   }
 
   /**
-   * 根据应用类型调用对应的API
+   * 根据应用类型自动选择API调用方法
    * @param toolId 工具ID
    * @param appType 应用类型 ('chat' | 'workflow')
    * @param inputs 输入参数
-   * @param query 查询内容（仅chat类型需要）
+   * @param query 查询内容（chat类型必需）
    * @param user 用户标识
    * @returns API响应
    */
@@ -308,36 +311,39 @@ export class DifyApiService {
     user: string = 'user'
   ): Promise<DifyApiResponse> {
     if (appType === 'chat') {
-      const chatQuery = query || inputs.query || '这是一个API连接测试';
-      return this.callChatApp(toolId, inputs, chatQuery, user);
+      if (!query) {
+        return {
+          success: false,
+          error: 'Chat应用需要提供query参数'
+        };
+      }
+      return this.callChatApp(toolId, inputs, query, user);
     } else if (appType === 'workflow') {
       return this.callWorkflow(toolId, inputs, user);
     } else {
       return {
         success: false,
-        error: `不支持的应用类型: ${appType}`,
-        details: { appType, supportedTypes: ['chat', 'workflow'] }
+        error: `不支持的应用类型: ${appType}`
       };
     }
   }
 
   /**
-   * 检查API配置是否正确
+   * 检查API配置是否完整
    * @param toolId 工具ID
-   * @returns 是否配置正确
+   * @returns 是否配置完整
    */
   checkApiConfig(toolId: string): boolean {
     try {
-      const apiKey = this.getApiKey(toolId);
-      // 基本验证：API Key应该是一个合理长度的字符串
-      return apiKey.length >= 10; // 假设API Key至少10个字符
+      this.getApiKey(toolId);
+      return !!this.baseUrl;
     } catch {
       return false;
     }
   }
 
   /**
-   * 获取API配置信息（用于调试）
+   * 获取API配置信息（用于调试显示）
    * @param toolId 工具ID
    * @returns 配置信息
    */
@@ -347,9 +353,9 @@ export class DifyApiService {
       return {
         hasApiKey: true,
         baseUrl: this.baseUrl,
-        keyPrefix: apiKey.substring(0, 10) + '...'
+        keyPrefix: `${apiKey.substring(0, 8)}...`
       };
-    } catch (error) {
+    } catch {
       return {
         hasApiKey: false,
         baseUrl: this.baseUrl

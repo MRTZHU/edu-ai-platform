@@ -50,7 +50,7 @@
 
 <script lang="ts" setup>
 import { breakpointsTailwind } from "@vueuse/core";
-import { supabase } from "@/services/supabase";
+import { supabase } from "@/config/db";
 
 defineProps<{
   modelValue: boolean;

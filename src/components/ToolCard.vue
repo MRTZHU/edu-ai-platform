@@ -63,11 +63,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import type { DifyappConfig } from '../../.cursor/fanben'
+import type { DifyAppConfig } from '../config/ai'
 import { difyApiService } from '@/services/difyApi'
 
 interface Props {
-  tool: DifyappConfig
+  tool: DifyAppConfig
 }
 
 const props = defineProps<Props>()

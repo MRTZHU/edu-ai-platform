@@ -28,14 +28,36 @@ const emailLoading = ref(false);
 async function emailAuth() {
   emailLoading.value = true; // 开始加载
   const { supabase } = useAuthStore(); // 从 Pinia store 获取 Supabase 客户端
-  // 根据 signUp 的值决定是调用 signUp 还是 signIn
-  const { user, error } = props.signUp
-    ? await supabase.auth.signUp(credentials.value) // 注册
-    : await supabase.auth.signIn(credentials.value); // 登录
-  if (user) router.push("/dashboard"); // 登录/注册成功，跳转到dashboard
-  else if (error) {
-    alert(error.message); // 显示错误信息
-    emailLoading.value = false; // 结束加载
+  
+  try {
+    // 根据 signUp 的值决定是调用 signUp 还是 signIn
+    const { user, error } = props.signUp
+      ? await supabase.auth.signUp(credentials.value, {
+          redirectTo: `${window.location.origin}/auth/callback`, // 注册确认后跳转到回调页面
+        }) // 注册
+      : await supabase.auth.signIn(credentials.value); // 登录
+      
+    if (error) {
+      console.error('认证错误:', error);
+      alert(error.message || '认证失败，请检查您的邮箱和密码'); // 显示错误信息
+      emailLoading.value = false; // 结束加载
+      return;
+    }
+    
+    if (user) {
+      console.log('认证成功:', user);
+      // 如果是注册，可能需要邮箱确认
+      if (props.signUp && !user.confirmed_at) {
+        alert('注册成功！请检查您的邮箱并点击确认链接来激活账户。');
+      } else {
+        router.push("/dashboard"); // 登录/注册成功，跳转到dashboard
+      }
+    }
+  } catch (error) {
+    console.error('认证异常:', error);
+    alert('认证过程中发生错误，请稍后重试');
+  } finally {
+    emailLoading.value = false; // 确保加载状态结束
   }
 }
 
@@ -46,16 +68,24 @@ const gitHubLoading = ref(false);
 async function gitHubAuth() {
   gitHubLoading.value = true; // 开始加载
   const { supabase } = useAuthStore(); // 从 Pinia store 获取 Supabase 客户端
-  // 调用 Supabase 的 signIn 方法，使用 GitHub 作为登录提供商
-  const { user, error } = await supabase.auth.signIn(
-    { provider: "github" },
-    {
-      redirectTo: `${window.location.origin}/auth/callback`, // 登录后跳转到回调页面
+  try {
+    // 调用 Supabase 的 signIn 方法，使用 GitHub 作为登录提供商
+    const { user, error } = await supabase.auth.signIn(
+      { provider: "github" },
+      {
+        redirectTo: `${window.location.origin}/auth/callback`, // 登录后跳转到回调页面
+      }
+    );
+    if (error) {
+      console.error('GitHub 登录错误:', error);
+      alert(error.message); // 显示错误信息
+    } else if (user) {
+      router.push("/dashboard"); // 登录成功，跳转到dashboard
     }
-  );
-  if (user) router.push("/dashboard"); // 登录成功，跳转到dashboard
-  else if (error) {
-    alert(error.message); // 显示错误信息
+  } catch (error) {
+    console.error('GitHub 登录异常:', error);
+    alert('GitHub 登录失败，请稍后重试');
+  } finally {
     gitHubLoading.value = false; // 结束加载
   }
 }
@@ -67,16 +97,24 @@ const googleLoading = ref(false);
 async function googleAuth() {
   googleLoading.value = true; // 开始加载
   const { supabase } = useAuthStore(); // 从 Pinia store 获取 Supabase 客户端
-  // 调用 Supabase 的 signIn 方法，使用 Google 作为登录提供商
-  const { user, error } = await supabase.auth.signIn(
-    { provider: "google" },
-    {
-      redirectTo: `${window.location.origin}/auth/callback`, // 登录后跳转到回调页面
+  try {
+    // 调用 Supabase 的 signIn 方法，使用 Google 作为登录提供商
+    const { user, error } = await supabase.auth.signIn(
+      { provider: "google" },
+      {
+        redirectTo: `${window.location.origin}/auth/callback`, // 登录后跳转到回调页面
+      }
+    );
+    if (error) {
+      console.error('Google 登录错误:', error);
+      alert(error.message); // 显示错误信息
+    } else if (user) {
+      router.push("/dashboard"); // 登录成功，跳转到dashboard
     }
-  );
-  if (user) router.push("/dashboard"); // 登录成功，跳转到dashboard
-  else if (error) {
-    alert(error.message); // 显示错误信息
+  } catch (error) {
+    console.error('Google 登录异常:', error);
+    alert('Google 登录失败，请稍后重试');
+  } finally {
     googleLoading.value = false; // 结束加载
   }
 }
@@ -88,16 +126,24 @@ const twitterLoading = ref(false);
 async function twitterAuth() {
   twitterLoading.value = true; // 开始加载
   const { supabase } = useAuthStore(); // 从 Pinia store 获取 Supabase 客户端
-  // 调用 Supabase 的 signIn 方法，使用 Twitter 作为登录提供商
-  const { user, error } = await supabase.auth.signIn(
-    { provider: "twitter" },
-    {
-      redirectTo: `${window.location.origin}/auth/callback`, // 登录后跳转到回调页面
+  try {
+    // 调用 Supabase 的 signIn 方法，使用 Twitter 作为登录提供商
+    const { user, error } = await supabase.auth.signIn(
+      { provider: "twitter" },
+      {
+        redirectTo: `${window.location.origin}/auth/callback`, // 登录后跳转到回调页面
+      }
+    );
+    if (error) {
+      console.error('Twitter 登录错误:', error);
+      alert(error.message); // 显示错误信息
+    } else if (user) {
+      router.push("/dashboard"); // 登录成功，跳转到dashboard
     }
-  );
-  if (user) router.push("/dashboard"); // 登录成功，跳转到dashboard
-  else if (error) {
-    alert(error.message); // 显示错误信息
+  } catch (error) {
+    console.error('Twitter 登录异常:', error);
+    alert('Twitter 登录失败，请稍后重试');
+  } finally {
     twitterLoading.value = false; // 结束加载
   }
 }
@@ -109,16 +155,24 @@ const facebookLoading = ref(false);
 async function facebookAuth() {
   facebookLoading.value = true; // 开始加载
   const { supabase } = useAuthStore(); // 从 Pinia store 获取 Supabase 客户端
-  // 调用 Supabase 的 signIn 方法，使用 Facebook 作为登录提供商
-  const { user, error } = await supabase.auth.signIn(
-    { provider: "facebook" },
-    {
-      redirectTo: `${window.location.origin}/auth/callback`, // 登录后跳转到回调页面
+  try {
+    // 调用 Supabase 的 signIn 方法，使用 Facebook 作为登录提供商
+    const { user, error } = await supabase.auth.signIn(
+      { provider: "facebook" },
+      {
+        redirectTo: `${window.location.origin}/auth/callback`, // 登录后跳转到回调页面
+      }
+    );
+    if (error) {
+      console.error('Facebook 登录错误:', error);
+      alert(error.message); // 显示错误信息
+    } else if (user) {
+      router.push("/dashboard"); // 登录成功，跳转到dashboard
     }
-  );
-  if (user) router.push("/dashboard"); // 登录成功，跳转到dashboard
-  else if (error) {
-    alert(error.message); // 显示错误信息
+  } catch (error) {
+    console.error('Facebook 登录异常:', error);
+    alert('Facebook 登录失败，请稍后重试');
+  } finally {
     facebookLoading.value = false; // 结束加载
   }
 }

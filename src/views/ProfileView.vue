@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { supabase } from "@/services/supabase";
+import { supabase } from "@/config/db";
 import { User } from "@supabase/supabase-js";
 
 const user = supabase.auth.user() as User;

@@ -29,11 +29,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { DifyappConfig } from '../../.cursor/fanben'
+import type { DifyAppConfig } from '../config/ai'
 
 interface Props {
   selectedCategory: string
-  tools: DifyappConfig[]
+  tools: DifyAppConfig[]
 }
 
 const props = defineProps<Props>()

@@ -9,7 +9,7 @@ async function onSubmit() {
   const { data, error } = await supabase.auth.api.resetPasswordForEmail(
     email.value,
     {
-      redirectTo: `${window.location.origin}/resetpassword`,
+      redirectTo: `${window.location.origin}/auth/resetpassword`,
     }
   );
   if (data) {

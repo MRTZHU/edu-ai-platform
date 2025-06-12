@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { supabase } from "@/services/supabase";
+import { supabase } from "@/config/db";
 </script>
 
 <template>
