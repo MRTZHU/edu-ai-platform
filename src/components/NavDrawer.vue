@@ -72,42 +72,42 @@ onClickOutside(navContainer, () => {
 const navLinks = [
   {
     text: "Home",
-    to: "/",
+    to: "/dashboard",
     icon: "heroicons-outline:home",
   },
   {
     text: "AI魔法工具箱",
-    to: "/ai-magic-toolbox",
+    to: "/dashboard/ai-magic-toolbox",
     icon: "heroicons-outline:inbox-stack",
   },
   {
     text: "AI机器人",
-    to: "/ai-robot",
+    to: "/dashboard/ai-robot",
     icon: "heroicons-outline:chat-bubble-bottom-center-text",
   },
   {
     text: "AI美育",
-    to: "/ai-painting",
+    to: "/dashboard/ai-painting",
     icon: "heroicons-outline:photo",
   },
   {
     text: "AI知识库",
-    to: "/ai-knowledge-base",
+    to: "/dashboard/ai-knowledge-base",
     icon: "heroicons-outline:server-stack",
   },
   {
     text: "生成历史",
-    to: "/generate-history",
+    to: "/dashboard/generate-history",
     icon: "heroicons-outline:queue-list",
   },
   {
     text: "魔法实验室",
-    to: "/magic-lab",
+    to: "/dashboard/magic-lab",
     icon: "heroicons-outline:beaker",
   },
   {
     text: "Profile",
-    to: "/profile",
+    to: "/dashboard/profile",
     icon: "heroicons-outline:user",
   },
 ];

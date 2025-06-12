@@ -1,6 +1,6 @@
 const aiConfig: aiConfig = {
     enable:true,
-    app:{
+    apps:{
         interview:{
             id:"interview",
             name:"AI面试官",
@@ -10,11 +10,22 @@ const aiConfig: aiConfig = {
             type:"chat",
             typename:"AI面试官",
             path:"/ai-interview",
-            apikey:"DIFY_API_KEY_LESSON_PLANNER",
+            category:"问题",
+            apikey:"VITE_DIFY_API_KEY_INTERVIEW",
+        },
+        translator:{
+            id:"translator",
+            name:"AI翻译",
+            description:"AI翻译，帮助你进行翻译",
+            icon:"heroicons-outline:user-circle",
+            iconBgColor:"#e0f2fe",
+            type:"chat",
+            typename:"AI翻译",
+            path:"/ai-translator",
+            category:"问题",
+            apikey:"VITE_DIFY_API_KEY_TRANSLATOR",
         }
-
     }
-    
 };
 
 interface aiConfig{
@@ -35,6 +46,7 @@ export interface DifyappConfig{
     type:string,
     typename:string,
     path:string,
+    category:string,
     tags?:string[],
     apikey:string,
 }

@@ -115,6 +115,11 @@ const router = createRouter({
           name: "profile",
           component: () => import("@/views/ProfileView.vue"),
         },
+        {
+          path: "ai-magic-toolbox",
+          name: "aiMagicToolbox",
+          component: () => import("@/views/AIMagicToolbox.vue"),
+        },
       ],
     },
 
