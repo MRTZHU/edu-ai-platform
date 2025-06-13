@@ -38,6 +38,12 @@ export interface DifyWorkflowRequest {
   }>;
 }
 
+export interface DifyStreamChunk {
+  event: string;
+  data: any;
+  id?: string;
+}
+
 export class DifyApiService {
   private baseUrl: string;
   
@@ -360,6 +366,154 @@ export class DifyApiService {
         hasApiKey: false,
         baseUrl: this.baseUrl
       };
+    }
+  }
+
+  async callChatAppStream(
+    toolId: string,
+    inputs: Record<string, any>,
+    query: string,
+    user: string = 'user',
+    conversationId?: string,
+    onChunk?: (chunk: DifyStreamChunk) => void,
+    onError?: (error: Error) => void,
+    onComplete?: () => void
+  ): Promise<void> {
+    let requestDetails = null;
+    
+    try {
+      const apiKey = this.getApiKey(toolId);
+      const endpoint = `${this.baseUrl}${endpoints.dify.chatMessages}`;
+      
+      const requestBody: DifyChatRequest = {
+        inputs,
+        query,
+        response_mode: 'streaming', // 使用流式模式
+        user,
+        conversation_id: conversationId,
+        files: []
+      };
+
+      // 记录请求详情用于调试
+      requestDetails = {
+        url: endpoint,
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey.substring(0, 10)}...`,
+          'Content-Type': 'application/json',
+        },
+        body: requestBody
+      };
+
+      console.log('🔍 Dify Chat Stream API 请求详情:', {
+        url: requestDetails.url,
+        method: requestDetails.method,
+        headers: {
+          'Authorization': requestDetails.headers.Authorization,
+          'Content-Type': requestDetails.headers['Content-Type']
+        },
+        bodyKeys: Object.keys(requestBody),
+        inputsKeys: Object.keys(inputs),
+        query,
+        conversationId
+      });
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'Accept': 'text/event-stream',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      console.log('📡 Dify Chat Stream API 响应状态:', response.status, response.statusText);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { raw: errorText };
+        }
+        
+        const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
+        console.error('❌ Dify Chat Stream API 错误:', errorData);
+        onError?.(error);
+        return;
+      }
+
+      // 检查响应是否为流式
+      if (!response.body) {
+        const error = new Error('响应体为空');
+        onError?.(error);
+        return;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          
+          if (done) {
+            console.log('🏁 流式响应结束');
+            onComplete?.();
+            break;
+          }
+
+          // 解码数据块
+          buffer += decoder.decode(value, { stream: true });
+          
+          // 处理缓冲区中的完整事件
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || ''; // 保留最后不完整的行
+
+          for (const line of lines) {
+            if (line.trim() === '') continue;
+            
+            // 解析SSE格式
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6); // 移除 "data: " 前缀
+              
+              if (data === '[DONE]') {
+                console.log('🏁 流式响应完成标志');
+                onComplete?.();
+                return;
+              }
+
+              try {
+                const eventData = JSON.parse(data);
+                console.log('📦 收到流式数据块:', eventData);
+                
+                // 构造标准化的数据块
+                const chunk: DifyStreamChunk = {
+                  event: eventData.event || 'message',
+                  data: eventData,
+                  id: eventData.id
+                };
+
+                onChunk?.(chunk);
+              } catch (parseError) {
+                console.warn('⚠️ 解析SSE数据失败:', data, parseError);
+              }
+            }
+          }
+        }
+      } catch (readerError) {
+        console.error('❌ 读取流式数据失败:', readerError);
+        onError?.(readerError instanceof Error ? readerError : new Error('读取流式数据失败'));
+      } finally {
+        reader.releaseLock();
+      }
+
+    } catch (error) {
+      console.error('❌ Dify Chat Stream API 调用失败:', error);
+      onError?.(error instanceof Error ? error : new Error('未知错误'));
     }
   }
 }

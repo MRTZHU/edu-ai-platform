@@ -50,19 +50,34 @@
 
     <!-- 悬停显示的使用按钮 -->
     <div class="mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div class="flex gap-2">
+        <!-- 主要使用按钮 -->
       <button 
         @click="useTool"
         :disabled="!apiStatus"
-        class="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white rounded-lg text-sm font-medium transition-colors disabled:cursor-not-allowed"
+          class="flex-1 py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white rounded-lg text-sm font-medium transition-colors disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
-        {{ apiStatus ? '立即使用' : 'API未配置' }}
+          <i-lucide-message-circle class="h-4 w-4" />
+          {{ apiStatus ? '开始对话' : 'API未配置' }}
+        </button>
+        
+        <!-- 测试按钮 -->
+        <button
+          v-if="apiStatus"
+          @click.stop="testTool"
+          class="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm transition-colors flex items-center justify-center"
+          title="API测试"
+        >
+          <i-lucide-beaker class="h-4 w-4" />
       </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import type { DifyAppConfig } from '../config/ai'
 import { difyApiService } from '@/services/difyApi'
 
@@ -71,7 +86,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const emit = defineEmits(['use', 'favorite'])
+const emit = defineEmits(['use', 'favorite', 'test'])
+const router = useRouter()
 
 // 收藏状态 (暂时使用本地状态，后续可连接数据库)
 const isFavorited = ref(false)
@@ -91,11 +107,24 @@ const toggleFavorite = () => {
   emit('favorite', props.tool.id, isFavorited.value)
 }
 
-// 使用工具
+// 使用工具 - 跳转到对话界面
 const useTool = () => {
   if (apiStatus.value) {
+    // 跳转到对话页面
+    router.push({
+      name: 'aiChat',
+      params: {
+        toolId: props.tool.id
+      }
+    })
+    
     emit('use', props.tool)
   }
+}
+
+// 测试工具 - 弹窗API测试（保留原有功能用于开发调试）
+const testTool = () => {
+  emit('test', props.tool)
 }
 
 onMounted(() => {

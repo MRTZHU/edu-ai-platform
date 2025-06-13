@@ -23,6 +23,7 @@
             :key="tool.id"
             :tool="tool"
             @use="handleUseTool"
+            @test="handleTestTool"
             @favorite="handleToggleFavorite"
           />
         </div>
@@ -48,6 +49,7 @@
             :key="tool.id"
             :tool="tool"
             @use="handleUseTool"
+            @test="handleTestTool"
             @favorite="handleToggleFavorite"
           />
         </div>
@@ -239,6 +241,12 @@ const filteredTools = computed((): DifyAppConfig[] => {
 
 // 处理工具使用
 const handleUseTool = (tool: DifyAppConfig) => {
+  console.log('使用工具:', tool.name, '- 跳转到对话界面')
+  // 由ToolCard组件直接处理路由跳转，这里只做日志记录
+}
+
+// 处理工具测试
+const handleTestTool = (tool: DifyAppConfig) => {
   selectedTool.value = tool
   selectedToolKey.value = tool.apikey.replace('VITE_DIFY_API_KEY_', '')
   showToolDialog.value = true
@@ -246,6 +254,8 @@ const handleUseTool = (tool: DifyAppConfig) => {
   
   // 更新API配置信息
   apiConfigInfo.value = difyApiService.getApiConfigInfo(selectedToolKey.value)
+  
+  console.log('测试工具:', tool.name, '- 打开API测试弹窗')
 }
 
 // 处理收藏切换

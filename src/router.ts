@@ -120,6 +120,13 @@ const router = createRouter({
           name: "aiMagicToolbox",
           component: () => import("@/views/AIMagicToolbox.vue"),
         },
+        // 新增：AI对话界面路由
+        {
+          path: "chat/:toolId",
+          name: "aiChat",
+          component: () => import("@/views/AIChatView.vue"),
+          props: true, // 将路由参数作为props传递给组件
+        },
       ],
     },
 
