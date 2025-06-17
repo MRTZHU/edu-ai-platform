@@ -48,6 +48,39 @@ export interface UserFile {
 }
 
 /**
+ * 作品类型定义
+ */
+export interface Artwork {
+  id: string
+  user_id: string
+  tool_id: string
+  title: string
+  content_type: 'image' | 'video' | 'audio' | 'text'
+  content_url: string
+  thumbnail_url?: string
+  prompt?: string
+  input_image_url?: string
+  output_image_url?: string
+  output_metadata?: {
+    dimensions?: string
+    file_size?: number
+    format?: string
+    permanent_url?: string
+    temporary_url?: string
+    upload_status?: 'uploading' | 'completed' | 'failed'
+    upload_completed_at?: number
+    upload_failed_at?: number
+    upload_error?: string
+    [key: string]: any
+  }
+  tool_name?: string
+  is_favorite: boolean
+  is_public: boolean
+  created_at: string
+  updated_at: string
+}
+
+/**
  * 数据库服务类
  */
 export class DatabaseService {
@@ -361,6 +394,122 @@ export class DatabaseService {
     if (error) {
       console.error('清空用户数据失败:', error)
       throw new Error(`清空用户数据失败: ${error.message}`)
+    }
+  }
+
+  // ==================== 作品相关操作 ====================
+
+  /**
+   * 创建作品记录
+   */
+  async createArtwork(artwork: Omit<Artwork, 'id' | 'user_id' | 'created_at' | 'updated_at'>): Promise<Artwork> {
+    const user = await this.getCurrentUser()
+    
+    const { data, error } = await supabase
+      .from('artworks')
+      .insert({
+        ...artwork,
+        user_id: user.id
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('创建作品失败:', error)
+      throw new Error(`创建作品失败: ${error.message}`)
+    }
+
+    return data
+  }
+
+  /**
+   * 获取用户作品列表
+   */
+  async getArtworks(options?: {
+    toolId?: string
+    contentType?: string
+    limit?: number
+    offset?: number
+    search?: string
+  }): Promise<Artwork[]> {
+    const user = await this.getCurrentUser()
+    
+    let query = supabase
+      .from('artworks')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+
+    if (options?.toolId) {
+      query = query.eq('tool_id', options.toolId)
+    }
+
+    if (options?.contentType) {
+      query = query.eq('content_type', options.contentType)
+    }
+
+    if (options?.search) {
+      query = query.ilike('title', `%${options.search}%`)
+    }
+
+    if (options?.limit) {
+      query = query.limit(options.limit)
+    }
+
+    if (options?.offset) {
+      query = query.range(options.offset, (options.offset + (options.limit || 10)) - 1)
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+      console.error('获取作品列表失败:', error)
+      throw new Error(`获取作品列表失败: ${error.message}`)
+    }
+
+    return data || []
+  }
+
+  /**
+   * 更新作品信息
+   */
+  async updateArtwork(artworkId: string, updates: Partial<Pick<Artwork, 'title' | 'is_favorite' | 'content_url' | 'output_image_url' | 'thumbnail_url' | 'output_metadata'>>): Promise<Artwork> {
+    const user = await this.getCurrentUser()
+    
+    const { data, error } = await supabase
+      .from('artworks')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', artworkId)
+      .eq('user_id', user.id)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('更新作品失败:', error)
+      throw new Error(`更新作品失败: ${error.message}`)
+    }
+
+    return data
+  }
+
+  /**
+   * 删除作品
+   */
+  async deleteArtwork(artworkId: string): Promise<void> {
+    const user = await this.getCurrentUser()
+    
+    const { error } = await supabase
+      .from('artworks')
+      .delete()
+      .eq('id', artworkId)
+      .eq('user_id', user.id)
+
+    if (error) {
+      console.error('删除作品失败:', error)
+      throw new Error(`删除作品失败: ${error.message}`)
     }
   }
 }

@@ -4,12 +4,98 @@
  */
 
 import { apiConfig, endpoints } from '@/config/api';
+import { paintingToolsConfig } from '@/config/ai/painting';
 
 export interface DifyApiResponse {
   success: boolean;
   data?: any;
   error?: string;
   details?: any; // 添加详细错误信息
+}
+
+/**
+ * Dify应用参数配置接口
+ */
+export interface DifyAppParameters {
+  opening_statement?: string;
+  suggested_questions?: string[];
+  suggested_questions_after_answer?: {
+    enabled: boolean;
+  };
+  speech_to_text?: {
+    enabled: boolean;
+  };
+  retriever_resource?: {
+    enabled: boolean;
+  };
+  annotation_reply?: {
+    enabled: boolean;
+  };
+  user_input_form?: DifyUserInputFormItem[];
+  file_upload?: DifyFileUploadSetting;
+  system_parameters?: {
+    file_size_limit?: number;
+    image_file_size_limit?: number;
+    audio_file_size_limit?: number;
+    video_file_size_limit?: number;
+  };
+}
+
+/**
+ * Dify用户输入表单项接口
+ */
+export interface DifyUserInputFormItem {
+  'text-input'?: {
+    label: string;
+    variable: string;
+    required: boolean;
+    default?: string;
+    max_length?: number;
+  };
+  'paragraph'?: {
+    label: string;
+    variable: string;
+    required: boolean;
+    default?: string;
+    max_length?: number;
+  };
+  'select'?: {
+    label: string;
+    variable: string;
+    required: boolean;
+    default?: string;
+    options: string[];
+  };
+}
+
+/**
+ * Dify文件上传设置接口
+ */
+export interface DifyFileUploadSetting {
+  image?: {
+    enabled: boolean;
+    number_limits?: number;
+    detail?: string;
+    transfer_methods?: ('remote_url' | 'local_file')[];
+  };
+  audio?: {
+    enabled: boolean;
+    number_limits?: number;
+    detail?: string;
+    transfer_methods?: ('remote_url' | 'local_file')[];
+  };
+  video?: {
+    enabled: boolean;
+    number_limits?: number;
+    detail?: string;
+    transfer_methods?: ('remote_url' | 'local_file')[];
+  };
+  document?: {
+    enabled: boolean;
+    number_limits?: number;
+    detail?: string;
+    transfer_methods?: ('remote_url' | 'local_file')[];
+  };
 }
 
 export interface DifyChatRequest {
@@ -58,20 +144,132 @@ export class DifyApiService {
    * @returns API Key
    */
   private getApiKey(toolId: string): string {
-    // 先尝试获取工具专用的API Key
-    const specificKeyName = `VITE_DIFY_API_KEY_${toolId.toUpperCase()}`;
+    // 首先尝试从工具配置中获取API密钥名称
+    const toolConfig = paintingToolsConfig[toolId];
+    
+    if (toolConfig && toolConfig.apikey) {
+      // 使用工具配置中指定的API密钥环境变量名
+      const apiKey = (import.meta.env as any)[toolConfig.apikey];
+      if (apiKey && typeof apiKey === 'string' && apiKey.trim()) {
+        console.log(`🔑 使用工具配置的API密钥: ${toolConfig.apikey}`);
+        return apiKey.trim();
+      } else {
+        console.warn(`⚠️ 工具 ${toolId} 配置的API密钥 ${toolConfig.apikey} 未找到或为空`);
+      }
+    }
+    
+    // 备用方案：尝试基于toolId生成的API密钥名称
+    const specificKeyName = `VITE_DIFY_API_KEY_${toolId.toUpperCase().replace(/-/g, '_')}`;
     const specificKey = (import.meta.env as any)[specificKeyName];
     if (specificKey && typeof specificKey === 'string' && specificKey.trim()) {
+      console.log(`🔑 使用生成的API密钥名称: ${specificKeyName}`);
       return specificKey.trim();
     }
     
     // 如果没有专用Key，使用默认Key
     const defaultKey = apiConfig.dify.defaultApiKey;
     if (!defaultKey || typeof defaultKey !== 'string' || !defaultKey.trim()) {
-      throw new Error('未配置Dify API Key，请检查环境变量配置');
+      throw new Error(`未配置工具 ${toolId} 的API密钥。请检查环境变量 ${toolConfig?.apikey || specificKeyName}`);
     }
     
+    console.log(`🔑 使用默认API密钥`);
     return defaultKey.trim();
+  }
+
+  /**
+   * 获取Dify应用的参数配置
+   * 用于自适应输入框，根据应用配置动态生成表单
+   * @param toolId 工具ID
+   * @returns 应用参数配置
+   */
+  async getAppParameters(toolId: string): Promise<DifyApiResponse> {
+    let requestDetails = null;
+    
+    try {
+      const apiKey = this.getApiKey(toolId);
+      const endpoint = `${this.baseUrl}/parameters`;
+      
+      // 记录请求详情用于调试
+      requestDetails = {
+        url: endpoint,
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${apiKey.substring(0, 10)}...`, // 只显示前10位用于调试
+        },
+        toolId
+      };
+
+      console.log('🔍 Dify Parameters API 请求详情:', {
+        url: requestDetails.url,
+        method: requestDetails.method,
+        headers: {
+          'Authorization': requestDetails.headers.Authorization,
+        },
+        toolId
+      });
+
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        }
+      });
+
+      console.log('📡 Dify Parameters API 响应状态:', response.status, response.statusText);
+
+      // 尝试解析响应体，无论成功还是失败
+      let responseData;
+      const responseText = await response.text();
+      
+      try {
+        responseData = JSON.parse(responseText);
+      } catch (parseError) {
+        responseData = { raw: responseText };
+      }
+
+      console.log('📄 Dify Parameters API 响应数据:', responseData);
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: `HTTP ${response.status}: ${response.statusText}`,
+          details: {
+            status: response.status,
+            statusText: response.statusText,
+            responseData,
+            requestDetails: {
+              url: requestDetails.url,
+              method: requestDetails.method,
+              toolId
+            }
+          }
+        };
+      }
+      
+      return {
+        success: true,
+        data: responseData as DifyAppParameters,
+        details: {
+          status: response.status,
+          requestDetails: {
+            url: requestDetails.url,
+            method: requestDetails.method,
+            toolId
+          }
+        }
+      };
+    } catch (error) {
+      console.error('❌ Dify Parameters API 调用失败:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '未知错误',
+        details: {
+          originalError: error,
+          requestDetails
+        }
+      };
+    }
   }
 
   /**
@@ -515,6 +713,102 @@ export class DifyApiService {
       console.error('❌ Dify Chat Stream API 调用失败:', error);
       onError?.(error instanceof Error ? error : new Error('未知错误'));
     }
+  }
+
+  /**
+   * 上传文件到Dify
+   * @param file 要上传的文件
+   * @param apiKey API密钥
+   * @returns 上传结果
+   */
+  async uploadFile(file: File, apiKey: string): Promise<DifyApiResponse> {
+    let requestDetails = null;
+    
+    try {
+      const endpoint = `${this.baseUrl}/files/upload`;
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('user', 'user');
+
+      requestDetails = {
+        url: endpoint,
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey.substring(0, 10)}...`,
+        },
+        fileName: file.name,
+        fileSize: file.size
+      };
+
+      console.log('🔍 Dify File Upload API 请求详情:', requestDetails);
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: formData
+      });
+
+      console.log('📡 Dify File Upload API 响应状态:', response.status, response.statusText);
+
+      let responseData;
+      const responseText = await response.text();
+      
+      try {
+        responseData = JSON.parse(responseText);
+      } catch (parseError) {
+        responseData = { raw: responseText };
+      }
+
+      console.log('📄 Dify File Upload API 响应数据:', responseData);
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: `HTTP ${response.status}: ${response.statusText}`,
+          details: {
+            status: response.status,
+            statusText: response.statusText,
+            responseData,
+            requestDetails
+          }
+        };
+      }
+      
+      return {
+        success: true,
+        data: responseData,
+        details: {
+          status: response.status,
+          requestDetails
+        }
+      };
+    } catch (error) {
+      console.error('❌ Dify File Upload API 调用失败:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '未知错误',
+        details: {
+          originalError: error,
+          requestDetails
+        }
+      };
+    }
+  }
+
+  /**
+   * 运行工作流 (runWorkflow的别名)
+   * @param params 工作流参数
+   * @returns API响应
+   */
+  async runWorkflow(params: {
+    toolId: string;
+    inputs: Record<string, any>;
+    user?: string;
+  }): Promise<DifyApiResponse> {
+    return this.callWorkflow(params.toolId, params.inputs, params.user || 'user');
   }
 }
 

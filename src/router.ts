@@ -127,6 +127,12 @@ const router = createRouter({
           component: () => import("@/views/AIChatView.vue"),
           props: true, // 将路由参数作为props传递给组件
         },
+        // 新增：AI美育工作台路由
+        {
+          path: "ai-painting",
+          name: "aiPainting",
+          component: () => import("@/views/AIPaintingView.vue"),
+        },
       ],
     },
 

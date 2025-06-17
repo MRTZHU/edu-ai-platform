@@ -12,16 +12,31 @@ import PurgeIcons from "vite-plugin-purge-icons";
 export default defineConfig({
   plugins: [
     vue(),
-    Icons({ compiler: "vue3" }),
-    PurgeIcons({
-      content: ["**/*.html", "**/*.js", "**/*.ts", "**/*.vue"],
+    
+    // 更新 Icons 插件配置
+    Icons({
+      compiler: "vue3",
+      // 添加 autoInstall 选项以自动下载缺少的图标库
+      autoInstall: true
     }),
+    
+    PurgeIcons({
+      content: ["​**​/*.html", "​**​/*.js", "​**​/*.ts", "​**​/*.vue"],
+    }),
+    
+    // 更新 Components 插件配置
     Components({
       dts: true,
-      resolvers: [IconsResolver()],
+      resolvers: [
+        // 启用多个图标集合
+        IconsResolver({
+          prefix: 'i', // 图标前缀
+          enabledCollections: ['heroicons-outline', 'heroicons-solid', 'lucide']
+        }),
+      ],
     }),
+    
     AutoImport({
-      // targets to transform
       include: [/\.[tj]s?$/, /\.vue$/, /\.vue\?vue/],
       imports: ["vue", "vue-router", "@vueuse/core", "pinia"],
     }),
@@ -31,4 +46,11 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
+  
+  // 可选：禁用错误覆盖层（错误提示不会全屏显示）
+  server: {
+    hmr: {
+      overlay: false
+    }
+  }
 });

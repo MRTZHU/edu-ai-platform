@@ -11,6 +11,7 @@ sql/
 ├── 01_create_tables.sql      # 数据库表结构创建
 ├── 02_create_rls_policies.sql # 行级安全策略设置
 ├── 03_create_indexes.sql     # 性能优化索引创建
+├── 04_create_artworks_table.sql # AI美育作品表创建 ✨ 新增
 └── README.md                 # 使用说明文档
 ```
 
@@ -36,6 +37,9 @@ sql/
    
    -- 第三步：创建性能索引
    -- 复制 03_create_indexes.sql 的内容并执行
+   
+   -- 第四步：创建AI美育作品表 ✨ 新增
+   -- 复制 04_create_artworks_table.sql 的内容并执行
    ```
 
 ### 方法二：使用Supabase CLI
@@ -54,6 +58,7 @@ supabase db push --include-all
 psql -h YOUR_DB_HOST -U postgres -d postgres -f sql/01_create_tables.sql
 psql -h YOUR_DB_HOST -U postgres -d postgres -f sql/02_create_rls_policies.sql
 psql -h YOUR_DB_HOST -U postgres -d postgres -f sql/03_create_indexes.sql
+psql -h YOUR_DB_HOST -U postgres -d postgres -f sql/04_create_artworks_table.sql
 ```
 
 ## 📊 数据库架构
@@ -87,6 +92,19 @@ psql -h YOUR_DB_HOST -U postgres -d postgres -f sql/03_create_indexes.sql
   - `user_id`: 用户ID
   - `file_name/file_type/file_url`: 文件基本信息
   - `conversation_id`: 关联的对话ID（可选）
+
+#### 4. artworks（AI美育作品表）✨ 新增
+- **用途**：存储AI生成的美育作品信息
+- **主要字段**：
+  - `id`: 作品唯一标识符
+  - `user_id`: 用户ID（关联auth.users）
+  - `tool_id`: AI工具标识符
+  - `title`: 作品标题
+  - `content_type`: 内容类型（image/video/audio/text）
+  - `content_url`: 作品内容URL
+  - `prompt`: 生成提示词
+  - `output_metadata`: JSON元数据（尺寸、格式等）
+  - `is_favorite/is_public`: 收藏和公开状态
 
 ## 🔒 安全策略
 
@@ -184,7 +202,7 @@ SELECT * FROM analyze_index_usage();
 
 ### ⚠️ 重要提醒
 
-1. **执行顺序**：必须按照文件编号顺序执行（01→02→03）
+1. **执行顺序**：必须按照文件编号顺序执行（01→02→03→04）
 2. **权限要求**：需要数据库管理员权限
 3. **备份建议**：在生产环境执行前请先备份数据库
 4. **测试验证**：建议先在开发环境测试所有SQL脚本

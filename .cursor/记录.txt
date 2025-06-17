@@ -578,3 +578,136 @@ VITE_DIFY_API_KEY=your_default_dify_api_key
 - **错误处理要完善**：使用 try-catch 包装异步操作，提供友好的错误信息 ✅
 - **用户反馈要及时**：注册成功时应该告知用户下一步操作（如邮箱确认）✅
 - **环境变量缺失会导致认证失败**：必须确保 Supabase 配置完整 ✅ 
+workflow示例：
+ // 📝 示例1：文本生成图像工具
+  textToImage: {
+    id: 'text-to-image',
+    name: 'AI绘画大师',
+    description: '通过文字描述生成精美的艺术作品，支持多种艺术风格',
+    icon: 'heroicons-outline:camera',           // 使用camera图标
+    iconBgColor: '#fef3c7',                     // 黄色背景
+    
+    // Dify配置
+    type: 'workflow',                           // 工作流类型
+    apikey: 'VITE_DIFY_API_KEY_TEXT_TO_IMAGE', // 环境变量名
+    
+    // 分类
+    category: 'image',
+    tags: ['绘画', '艺术', '创作'],
+    
+    // 功能特性
+    features: {
+      supportTextInput: true,    // ✅ 支持文本输入
+      supportImageInput: false,  // ❌ 不支持图片上传
+      supportAudioInput: false,  // ❌ 不支持音频上传
+      outputType: 'image',       // 输出图片
+      adaptiveInput: true        // 支持自适应输入
+    },
+    
+    // 示例（可选）
+    examples: [
+      {
+        title: '风景画创作',
+        description: '生成美丽的自然风景画',
+        inputExample: '一幅宁静的湖泊风景画，夕阳西下，水面倒映着金色的光芒'
+      },
+      {
+        title: '人物肖像',
+        description: '创作人物肖像画',
+        inputExample: '一位优雅的女性肖像，油画风格，柔和的光线'
+      }
+    ]
+  },
+
+  // 📝 示例2：图像转换工具
+  imageToImage: {
+    id: 'image-to-image',
+    name: 'AI图像转换',
+    description: '基于输入图像生成新的艺术作品，支持风格转换和图像增强',
+    icon: 'heroicons-outline:refresh',
+    iconBgColor: '#ddd6fe',
+    
+    type: 'workflow',
+    apikey: 'VITE_DIFY_API_KEY_IMAGE_TO_IMAGE',
+    
+    category: 'image',
+    tags: ['图像处理', '风格转换', '增强'],
+    
+    features: {
+      supportTextInput: true,    // ✅ 支持文本描述
+      supportImageInput: true,   // ✅ 支持图片上传
+      supportAudioInput: false,
+      outputType: 'image',
+      adaptiveInput: true
+    },
+    
+    examples: [
+      {
+        title: '风格转换',
+        description: '将照片转换为艺术画风格',
+        inputExample: '将这张照片转换为梵高的星空风格'
+      }
+    ]
+  },
+
+  // 📝 示例3：标志设计工具
+  logoDesign: {
+    id: 'logo-design',
+    name: 'AI标志设计',
+    description: '智能生成专业的标志和品牌设计，适用于各种商业场景',
+    icon: 'heroicons-outline:star',
+    iconBgColor: '#fecaca',
+    
+    type: 'workflow',
+    apikey: 'VITE_DIFY_API_KEY_LOGO_DESIGN',
+    
+    category: 'design',
+    tags: ['标志', '品牌', '设计'],
+    
+    features: {
+      supportTextInput: true,
+      supportImageInput: false,
+      supportAudioInput: false,
+      outputType: 'image',
+      adaptiveInput: true
+    },
+    
+    examples: [
+      {
+        title: '科技公司标志',
+        description: '现代简约的科技公司标志',
+        inputExample: '为一家AI科技公司设计标志，要求现代、简约、科技感'
+      }
+    ]
+  },
+
+  // 📝 示例4：音乐创作工具
+  musicComposer: {
+    id: 'music-composer',
+    name: 'AI音乐创作',
+    description: '根据描述和情感生成原创音乐作品，支持多种音乐风格',
+    icon: 'heroicons-outline:music-note',
+    iconBgColor: '#d1fae5',
+    
+    type: 'workflow',
+    apikey: 'VITE_DIFY_API_KEY_MUSIC_COMPOSER',
+    
+    category: 'music',
+    tags: ['音乐', '创作', '作曲'],
+    
+    features: {
+      supportTextInput: true,
+      supportImageInput: false,
+      supportAudioInput: true,   // ✅ 支持音频输入
+      outputType: 'audio',       // 输出音频
+      adaptiveInput: true
+    },
+    
+    examples: [
+      {
+        title: '轻松背景音乐',
+        description: '创作轻松愉快的背景音乐',
+        inputExample: '创作一首轻松愉快的钢琴曲，适合咖啡厅播放'
+      }
+    ]
+  }

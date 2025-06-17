@@ -4,6 +4,47 @@ This is a project I created to show how Supabase auth (email and 3rd party GitHu
 
 If you want to a quick start to your next Vue 3 + Supabase app, please feel free to use this template. Below I will guide you through how to set the app up locally, and the configuration you need to do in Supabase.
 
+## 环境变量配置
+
+创建 `.env` 文件并配置以下环境变量：
+
+```env
+# Supabase配置
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Dify AI平台配置 (AI美育功能)
+VITE_DIFY_BASE_URL=http://127.0.0.1
+VITE_DIFY_API_KEY_TEXT_TO_IMAGE=your_dify_api_key_for_text_to_image
+VITE_DIFY_API_KEY_IMAGE_TO_IMAGE=your_dify_api_key_for_image_to_image
+VITE_DIFY_API_KEY_TEXT_TO_MUSIC=your_dify_api_key_for_text_to_music
+VITE_DIFY_API_KEY_TEXT_TO_VIDEO=your_dify_api_key_for_text_to_video
+```
+
+### AI美育功能配置说明
+
+1. **VITE_DIFY_BASE_URL**: Dify服务器的基础URL，本地开发通常是 `http://127.0.0.1`
+2. **VITE_DIFY_API_KEY_***: 各个AI工具对应的Dify应用API密钥
+   - 需要在Dify平台创建对应的工作流应用
+   - 每个工具需要单独的API密钥
+
+## 数据库设置
+
+### 创建AI美育作品表
+
+执行以下SQL脚本创建必要的数据库表：
+
+```sql
+-- 在Supabase SQL编辑器中执行
+-- 文件位置: sql/04_create_artworks_table.sql
+```
+
+该脚本将创建：
+- `artworks` 表：存储AI生成的美育作品
+- 相关索引：优化查询性能
+- RLS策略：确保数据安全
+- 触发器：自动更新时间戳
+
 ## Supabase Setup
 
 Head on over to https://supabase.com/ and create your app. Choose your Project name, password, region and pricing plan as appropriate. This app will work just fine on free tier.
